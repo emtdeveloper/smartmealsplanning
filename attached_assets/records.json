@@ -1,0 +1,165 @@
+{
+    "records": {
+        "1": {
+            "name": "nagizaaz shaik",
+            "gender": "male",
+            "height": 175.0,
+            "weight": 70.0,
+            "bmi": 22.857142857142858,
+            "goal": "Muscle Gain",
+            "diet": "both",
+            "health_conditions": "no",
+            "progress_history": [
+                {
+                    "timestamp": "2025-02-28 22:21:54",
+                    "weight": 69.0,
+                    "bmi": 22.53
+                },
+                {
+                    "timestamp": "2025-02-28 22:53:00",
+                    "old_weight": 75.0,
+                    "new_weight": 70.0,
+                    "old_bmi": 24.49,
+                    "new_bmi": 22.86
+                }
+            ],
+            "health_status": "Healthy",
+            "age": 30,
+            "activity_level": "moderately active",
+            "allergies": [],
+            "preferred_cuisines": []
+        },
+        "2": {
+            "name": "darshan jigala",
+            "gender": "male",
+            "height": 180.0,
+            "weight": 70.0,
+            "bmi": 21.6,
+            "goal": "Muscle Gain",
+            "diet": "both",
+            "health_conditions": "no"
+        },
+        "3": {
+            "name": "neelima botla",
+            "gender": "female",
+            "height": 160.0,
+            "weight": 75.0,
+            "bmi": 29.3,
+            "goal": "Weight Loss",
+            "diet": "both",
+            "health_conditions": "no"
+        },
+        "4": {
+            "name": "Nikhil reddy",
+            "gender": "Male",
+            "height": 160.0,
+            "weight": 85.0,
+            "bmi": 33.2,
+            "goal": "Weight Loss",
+            "diet": "Both",
+            "health_conditions": "None",
+            "health_status": "Unhealthy",
+            "progress_history": []
+        },
+        "5": {
+            "name": "Nikita anakala",
+            "gender": "Female",
+            "height": 160.0,
+            "weight": 75.0,
+            "bmi": 29.3,
+            "goal": "Weight Loss",
+            "diet": "Both",
+            "health_conditions": "None",
+            "health_status": "Unhealthy",
+            "progress_history": [],
+            "food_preferences": []
+        },
+        "6": {
+            "name": "hi bye",
+            "gender": "other",
+            "height": 179.0,
+            "weight": 75.0,
+            "bmi": 23.41,
+            "goal": "muscle",
+            "diet": "both",
+            "health_conditions": "no",
+            "health_status": "Healthy",
+            "progress_history": [],
+            "food_preferences": []
+        },
+        "7": {
+            "name": "arun tushar",
+            "gender": "male",
+            "height": 180.0,
+            "weight": 79.0,
+            "bmi": 24.38,
+            "goal": "Muscle Gain",
+            "diet": "both",
+            "health_conditions": "no",
+            "health_status": "Healthy",
+            "progress_history": [
+                {
+                    "timestamp": "2025-03-25 19:50:32",
+                    "weight": 69.0,
+                    "bmi": 21.3
+                },
+                {
+                    "timestamp": "2025-03-25 19:51:12",
+                    "weight": 79.0,
+                    "bmi": 24.38
+                }
+            ],
+            "food_preferences": [],
+            "age": 30,
+            "activity_level": "lightly active",
+            "allergies": [
+                "dairy"
+            ],
+            "preferred_cuisines": [
+                "Indian",
+                "Mexican"
+            ]
+        },
+        "8": {
+            "name": "t r",
+            "gender": "male",
+            "height": 165.0,
+            "weight": 70.0,
+            "bmi": 25.71,
+            "goal": "Muscle Gain",
+            "diet": "Both",
+            "health_conditions": "None",
+            "progress_history": [
+                {
+                    "timestamp": "2025-03-24 00:28:24",
+                    "weight": 70.0,
+                    "bmi": 25.71
+                }
+            ],
+            "health_status": "Overweight"
+        },
+        "9": {
+            "name": "asd a",
+            "gender": "male",
+            "age": 24,
+            "height": 170.07999999999993,
+            "weight": 70.0,
+            "bmi": 1517.8708399999996,
+            "goal": "Weight Loss",
+            "diet": "vegetarian",
+            "activity_level": "very active",
+            "allergies": [],
+            "preferred_cuisines": [],
+            "health_conditions": "",
+            "progress_history": [
+                {
+                    "timestamp": "2025-04-22 23:03:18",
+                    "weight": 70.0,
+                    "bmi": 24.22
+                }
+            ],
+            "health_status": "Obese"
+        }
+    },
+    "next_record_id": 8
+}

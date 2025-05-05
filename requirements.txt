@@ -1,0 +1,11 @@
+streamlit
+pymongo
+pandas
+numpy
+plotly
+bcrypt
+dotenv
+python-dotenv
+scikit-learn
+matplotlib
+statsmodels
