@@ -22,8 +22,7 @@ hide_streamlit_style = """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 # Load API key
-load_dotenv()
-client = OpenAI(api_key=os.getenv("OPENAI_KEY"))
+client = OpenAI(api_key=st.secrets["OPENAI_KEY"])
 
 # Load data
 food_data = pd.read_csv("attached_assets/cleaned_food_data_refined.csv")
