@@ -50,16 +50,7 @@ st.markdown(
     <!-- Emoji Bars -->
     
 
-    <div class="emoji-bar right">
-    <div class="emoji-content">
-        🍩🍎🥗🍇🍣🍔🍕🥑🥥
-        🍩🍎🥗🍇🍣🍔🍕🥑🥥
-        🍩🍎🥗🍇🍣🍔🍕🥑🥥
-        🍩🍎🥗🍇🍣🍔🍕🥑🥥
-        🍩🍎🥗🍇🍣🍔🍕🥑🥥
-        🍩🍎🥗🍇🍣🍔🍕🥑🥥
-    </div>
-    </div>
+    
 
     """,
     unsafe_allow_html=True
