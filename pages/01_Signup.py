@@ -48,16 +48,7 @@ st.markdown(
     </style>
 
     <!-- Emoji Bars -->
-    <div class="emoji-bar left">
-    <div class="emoji-content">
-        🥑🍔🍇🍣🍕🍎🥗🍩🥥
-        🥑🍔🍇🍣🍕🍎🥗🍩🥥
-        🥑🍔🍇🍣🍕🍎🥗🍩🥥
-        🥑🍔🍇🍣🍕🍎🥗🍩🥥
-        🥑🍔🍇🍣🍕🍎🥗🍩🥥
-        🥑🍔🍇🍣🍕🍎🥗🍩🥥
-    </div>
-    </div>
+    
 
     <div class="emoji-bar right">
     <div class="emoji-content">
