@@ -657,3 +657,30 @@ def get_form_points(user_data):
     return form_points
 
 def get_exercise_recommendation_plan(user_data):
+    """
+    Determine exercise plan level (1-7) based on user metrics.
+    """
+    bmi = user_data.get('bmi', 0)
+    if bmi == 0:  # Calculate BMI if not provided
+        weight = user_data.get('weight', 70)
+        height = user_data.get('height', 170)
+        bmi = weight / ((height / 100) ** 2)
+    
+    bfp = calculate_body_fat_percentage(user_data)
+    age = user_data.get('age', 30)
+
+    # Simplified logic for plan level
+    if bfp < 15 and bmi < 25:
+        return 7  # Very Challenging
+    elif bfp < 20 and bmi < 27:
+        return 6  # Challenging
+    elif bfp < 25 and bmi < 30:
+        return 5  # Moderate to Challenging
+    elif bfp < 30 and bmi < 32:
+        return 4  # Moderate
+    elif bfp < 35 and bmi < 35:
+        return 3  # Light to Moderate
+    elif bfp < 40:
+        return 2  # Light
+    else:
+        return 1  # Very Light
