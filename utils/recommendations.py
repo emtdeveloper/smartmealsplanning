@@ -10,7 +10,7 @@ from utils.user_management import save_meal_plan
 #added by tushar start
 from sklearn.neighbors import NearestNeighbors
 from sklearn.preprocessing import StandardScaler
-
+import os
 #end
 def load_user_ratings():
     """
