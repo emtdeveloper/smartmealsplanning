@@ -1,0 +1,200 @@
+user_id,exercise_title,rating
+user1,Bench Press,4
+user1,Treadmill Running,3
+user1,Yoga Stretch,2
+user1,Squat,5
+user2,Squat,5
+user2,Yoga Stretch,4
+user2,Deadlift,3
+user2,Cycling,4
+user3,Push-Up,4
+user3,Leg Press,3
+user3,Child Pose,5
+user3,Jump Rope,4
+user4,Lat Pulldown,4
+user4,Elliptical Trainer,3
+user4,Seated Hamstring Stretch,4
+user4,Overhead Press,2
+test_user,Push-Up,4
+test_user,Treadmill Running,3
+test_user,Child Pose,5
+test_user,Dumbbell Row,4
+user1,Plank,3
+user2,Barbell Row,4
+user3,Stationary Bike,3
+user4,Lunges,3
+test_user,Seated Hamstring Stretch,4
+13,Wide-grip barbell curl,3
+13,Close-grip EZ-bar curl,3
+13,Band Hip Adductions,3
+13,Fire Hydrant,3
+13,Bench barbell roll-out,3
+13,Barbell Side Bend,3
+13,Stomach Vacuum,3
+13,Adductor SMR,3
+13,Barbell Curls Lying Against An Incline,3
+13,Seated Close-Grip Concentration Barbell Curl,3
+13,Calf Raises - With Bands,3
+13,Rocking Standing Calf Raise,3
+13,Advanced Kettlebell Windmill,3
+13,Kettlebell Pass Between The Legs,3
+13,Lying Bent Leg Groin,3
+13,Standing Hip Circles,3
+13,Close-grip barbell curl,3
+13,Drag curl,3
+13,Standing barbell calf raise,3
+13,Barbell Seated Calf Raise,3
+13,Dumbbell spell caster,3
+13,Plate Twist,3
+13,Groiners,3
+13,Side Leg Raises,3
+13,Lying High Bench Barbell Curl,3
+13,Seated wide-grip curl to close-grip curl,3
+13,Calf Raise On A Dumbbell,3
+13,Balance Board,3
+13,Bosu Ball Cable Crunch With Side Bends,3
+13,Cable reverse crunch,3
+13,Single-leg lying cross-over stretch,3
+13,Groin and Back Stretch,3
+13,Seated Straigh-Bar Curl Superset,3
+13,Incline Hammer Curls,3
+13,Standing Calf Raises,3
+13,Calf Press,3
+13,Cable Russian Twists,3
+13,Cable Seated Crunch,3
+13,Adductor/Groin,3
+13,Brachialis SMR,3
+13,Biceps curl to shoulder press,3
+13,Flexor Incline Dumbbell Curls,3
+13,Smith Machine Reverse Calf Raises,3
+13,Hip Extension with Bands,3
+13,Cable Judo Flip,3
+13,Gorilla Chin/Crunch,3
+13,Standing Biceps Stretch,3
+13,Seated Biceps,3
+13,Standing concentration curl,4
+13,Cross-body hammer curl,3
+13,Preacher Hammer Dumbbell Curl,3
+13,Hip Lift with Band,3
+13,Kneeling Squat,3
+13,Crunch - Hands Overhead,3
+13,Butt-Ups,3
+13,Calf SMR,3
+13,Anterior Tibialis-SMR,3
+13,Lying Supine Dumbbell Curl,3
+13,Standing Dumbbell Reverse Curl,3
+13,Kneeling Jump Squat,3
+13,Suspended Hip Thrust,3
+13,Janda Sit-Up,3
+13,Leg Pull-In,3
+13,Foot-SMR,3
+13,Knee Circles,3
+13,Palms-out incline biceps curl,3
+13,Straight-arm plank with biceps curl,3
+13,Pull Through,3
+13,Glute Kickback,3
+13,Cross Crunch,3
+13,Full Moon,3
+13,Ankle Circles,3
+13,Calf Stretch Elbows Against Wall,3
+13,Face-down incline dumbbell biceps curl,3
+13,Seated Dumbbell Inner Biceps Curl,3
+13,Standing hip extension,3
+13,Neck Bridge Supine,3
+13,Hanging knee raise with manual resistance,3
+13,Partner lying leg raise with lateral throw down,3
+13,Standing Soleus And Achilles Stretch,3
+13,Behind Head Chest Stretch,3
+13,Standing Inner-Biceps Curl,3
+13,Reverse Plate Curls,3
+13,Downward Facing Balance,3
+13,Band Good Morning (Pull Through),3
+13,Hanging leg raise with throw down,3
+13,Partner sit-up with high-five,3
+13,Pass-through stretch with band,3
+13,Exercise ball chest stretch,3
+13,Suspended Curl,3
+13,Plate hammer curl,3
+13,Clean Deadlift,3
+13,Sumo deadlift,3
+13,Partner lying leg raise with throw down,3
+13,Partner target sit-up,3
+13,Wrist Circles,3
+13,Kneeling Forearm Stretch,3
+13,Standing One-Arm Cable Curl,3
+13,Reverse Cable Curl,3
+13,Romanian Deadlift from Deficit,3
+13,Power Snatch,3
+13,Suspended Crunch,3
+13,Partner front Russian twist and pass,3
+13,Seated Glute,3
+13,Lying Glute,3
+13,Lying cable biceps curl,3
+13,Cable rope preacher hammer curl,3
+13,Power Clean from Blocks,3
+13,Snatch Deadlift,3
+13,Partner side Russian twist and pass,3
+13,Weighted Ball Side Bend,3
+13,Seated Glute Stretch,3
+13,Hamstring-SMR,3
+13,Lying Close-Grip Bar Curl On High Pulley,3
+13,Machine Bicep Curl,3
+13,Hang Snatch,3
+13,Wide Stance Stiff Legs,3
+13,Barbell deficit deadlift,3
+13,Deadlift with Bands,3
+13,Lying Hamstring,3
+13,Chair Leg Extended Stretch,3
+13,Machine Preacher Curls,3
+13,Reverse Barbell Preacher Curls,3
+13,Clean,3
+13,Sumo Deadlift with Chains,3
+13,Deadlift with Chains,3
+13,Rack Pull with Bands,3
+13,Seated Hamstring and Calf Stretch,3
+13,Standing leg swing,3
+13,Close-Grip EZ-Bar Curl with Band,3
+13,Cross Over - With Bands,3
+13,Sumo Deadlift with Bands,3
+13,Good Morning off Pins,3
+13,Seated Good Mornings,3
+13,Stiff Leg Barbell Good Morning,3
+13,Inchworm,3
+13,90/90 Hamstring,3
+13,Bench Press - With Bands,3
+13,Bench Press With Short Bands,3
+13,Stiff-Legged Deadlift,3
+13,Snatch Pull,3
+13,Reverse Band Deadlift,3
+13,Axle Deadlift,3
+13,Knee To Chest,3
+13,Hip Stretch With Twist,3
+13,Feet-Elevated TRX Push-Up,3
+13,Wide-grip bench press,3
+13,Hanging Bar Good Morning,3
+13,Reverse Band Sumo Deadlift,3
+13,Atlas Stone Trainer,3
+13,Partner Flat-Bench Back Extension,3
+13,Alternating Leg Swing,3
+13,Single-leg balance and reach,3
+13,Wide-Grip Decline Barbell Bench Press,3
+13,Neck Press,3
+13,Muscle Snatch,3
+13,Split Snatch,3
+13,Keg Load,3
+13,Partner bench back extension,3
+13,High Kick,3
+13,Lying hamstring stretch with band,3
+13,Front Raise And Pullover,4
+13,Wide-Grip Decline Barbell Pullover,4
+13,Barbell Bench Press-Wide Grip,2
+13,Single-arm kettlebell clean,5
+13,Romanian Deadlift with Kettlebell,4
+13,Barbell Guillotine Bench Press,2
+13,Hang Snatch - Below Knees,4
+13,Kettlebell Dead Clean,5
+13,Seated Back Extension,4
+13,Upper Back-Leg Grab,4
+13,Extended Range One-Arm Kettlebell Floor Press,4
+13,Kettlebell alternating floor press,4
+13,Skating,4
