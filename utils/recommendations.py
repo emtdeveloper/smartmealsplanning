@@ -7,7 +7,26 @@ import logging
 from sklearn.preprocessing import MinMaxScaler
 from utils.data_processing import filter_recipes_by_allergies_and_cuisines,load_optimized_meals
 from utils.user_management import save_meal_plan
+#added by tushar start
+from sklearn.neighbors import NearestNeighbors
+from sklearn.preprocessing import StandardScaler
 
+#end
+def load_user_ratings():
+    """
+    Load user-exercise ratings from CSV or initialize empty DataFrame.
+    """
+    ratings_file = 'attached_assets/user_exercise_ratings.csv'
+    if os.path.exists(ratings_file):
+        return pd.read_csv(ratings_file)
+    return pd.DataFrame(columns=['user_id', 'exercise_title', 'rating'])
+def save_user_ratings(ratings_df):
+    """
+    Save user-exercise ratings to CSV.
+    """
+    ratings_df.to_csv('attached_assets/user_exercise_ratings.csv', index=False)
+
+#end
 
 def generate_meal_plan_with_cosine_similarity(user_data, recipes_df, days,meals_per_day):
     """
@@ -314,40 +333,91 @@ def recommend_foods_by_goal(user_data, recipe_data, num_recommendations=10):
             })
     return recommendations
 
-def recommend_exercises(user_data, exercise_data, num_recommendations=5):
+def recommend_exercises(user_data, exercise_data, num_recommendations=10):
     """
-    Recommend exercises based on user's fitness goal and health status
+    Recommend exercises using KNN collaborative filtering combined with rule-based filtering.
     
     Parameters:
-    - user_data: Dict containing user information
-    - exercise_data: DataFrame with exercise data
-    - num_recommendations: Number of exercises to recommend
+    - user_data: Dict with user info (height, weight, age, gender, goal, health_status, health_conditions, activity_level, user_id)
+    - exercise_data: DataFrame with exercise data (Title, Type, BodyPart, Equipment, Level, Rating, Desc, RatingDesc)
+    - num_recommendations: Total number of exercises to recommend
     
     Returns:
-    - Dict containing recommended exercises by category
+    - Dict with recommended exercises by category (Cardio, Strength, Flexibility)
     """
     if exercise_data.empty:
         return {"error": "No exercise data available"}
     
-    goal = user_data.get('goal', '').lower()
-    health_status = user_data.get('health_status', '').lower()
-    health_conditions = user_data.get('health_conditions', '').lower()
+    # Get user profile attributes
+    user_id = user_data.get('user_id', 'default_user')  # Assume user_id is provided
+    goal = user_data.get('goal', 'Maintain Weight')
+    health_status = user_data.get('health_status', 'Healthy').lower()
+    health_conditions = user_data.get('health_conditions', 'None').lower()
+    age = user_data.get('age', 30)
+    gender = user_data.get('gender', 'male').lower()
+    activity_level = user_data.get('activity_level', 'Moderately Active').lower()
     
-    # Determine appropriate exercise intensity based on health status
-    low_intensity = ('underweight' in health_status or 
-                    'obese' in health_status or 
-                    any(condition in health_conditions for condition in ['heart', 'diabetes', 'respiratory', 'joint']))
+    # Calculate BMI
+    weight = user_data.get('weight', 70)
+    height = user_data.get('height', 170)
+    bmi = weight / ((height / 100) ** 2)
     
-    # Select exercises based on goal and intensity
-    if 'weight loss' in goal:
-        # Weight loss: mix of cardio, flexibility, and some strength
-        weights = {'Cardio': 0.5, 'Flexibility': 0.3, 'Strength': 0.2}
-    elif 'muscle gain' in goal:
-        # Muscle gain: emphasis on strength training
-        weights = {'Strength': 0.7, 'Cardio': 0.1, 'Flexibility': 0.2}
-    else:
-        # Balanced approach for maintenance or other goals
-        weights = {'Cardio': 0.3, 'Strength': 0.4, 'Flexibility': 0.3}
+    # Get exercise plan level (1-7)
+    exercise_plan = get_exercise_recommendation_plan(user_data)
+    
+    # Map plan level to intensity
+    intensity_level = 'Beginner' if exercise_plan <= 3 else 'Expert' if exercise_plan >= 6 else 'Intermediate'
+    
+    # Adjust intensity based on health status and conditions
+    low_intensity_conditions = ['heart', 'diabetes', 'respiratory', 'joint', 'knee pain', 'back pain']
+    if health_status in ['underweight', 'obese', 'poor'] or any(cond in health_conditions for cond in low_intensity_conditions):
+        intensity_level = 'Beginner'
+    elif health_status == 'moderate':
+        intensity_level = min(intensity_level, 'Intermediate', key=lambda x: ['Beginner', 'Intermediate', 'Expert'].index(x))
+    
+    # Adjust intensity based on age
+    age_group = 'Young' if age < 30 else 'Adult' if age <= 50 else 'Older'
+    if age_group == 'Older':
+        intensity_level = 'Beginner'
+    
+    # Adjust intensity based on activity level
+    activity_map = {
+        'sedentary': {'level': 'Beginner', 'days': 3, 'sets': 2},
+        'lightly active': {'level': 'Beginner', 'days': 4, 'sets': 3},
+        'moderately active': {'level': 'Intermediate', 'days': 5, 'sets': 4},
+        'very active': {'level': 'Expert', 'days': 6, 'sets': 5}
+    }
+    activity_settings = activity_map.get(activity_level, activity_map['moderately active'])
+    intensity_level = min(intensity_level, activity_settings['level'], key=lambda x: ['Beginner', 'Intermediate', 'Expert'].index(x))
+    
+    # Define goal-based weights
+    weights = {
+        'Weight Loss': {'Cardio': 0.5, 'Strength': 0.3, 'Flexibility': 0.2},
+        'Muscle Gain': {'Strength': 0.6, 'Cardio': 0.2, 'Flexibility': 0.2},
+        'Weight Gain': {'Strength': 0.7, 'Cardio': 0.1, 'Flexibility': 0.2},
+        'Maintain Weight': {'Strength': 0.4, 'Cardio': 0.3, 'Flexibility': 0.3}
+    }.get(goal, {'Strength': 0.4, 'Cardio': 0.3, 'Flexibility': 0.3})
+    
+    # Adjust weights based on gender and age
+    for key in weights:
+        weights[key] = float(weights.get(key, 0.0))
+    if gender == 'female':
+        weights['Flexibility'] = min(0.4, weights['Flexibility'] + 0.1)
+        weights['Strength'] = max(0.2, weights['Strength'] - 0.05)
+        weights['Cardio'] = max(0.1, 1.0 - weights['Strength'] - weights['Flexibility'])
+    if age_group == 'Older':
+        weights['Flexibility'] = min(0.5, weights['Flexibility'] + 0.2)
+        weights['Cardio'] = max(0.2, weights['Cardio'] - 0.1)
+        weights['Strength'] = max(0.1, 1.0 - weights['Cardio'] - weights['Flexibility'])
+    
+    # Normalize weights to sum to 1
+    total = sum(weights.values())
+    if total > 0:
+        for key in weights:
+            weights[key] = weights[key] / total
+    
+    # Load user ratings
+    ratings_df = load_user_ratings()
     
     # Initialize recommendations
     recommendations = {
@@ -356,156 +426,234 @@ def recommend_exercises(user_data, exercise_data, num_recommendations=5):
         "Flexibility": []
     }
     
+    # Filter exercise data based on health conditions
+    condition_exclusions = {
+        'knee pain': {'BodyPart': ['Quadriceps', 'Hamstrings', 'Calves'], 'Type': ['HIIT', 'Plyometrics']},
+        'back pain': {'BodyPart': ['Lower Back'], 'Equipment': ['Barbell']},
+        'heart': {'Type': ['HIIT', 'Plyometrics'], 'Level': ['Expert']},
+        'joint': {'Type': ['Plyometrics'], 'Equipment': ['Barbell']}
+    }
+    
+    df = exercise_data.copy()
+    for condition, exclusions in condition_exclusions.items():
+        if condition in health_conditions:
+            for key, values in exclusions.items():
+                df = df[~df[key].str.contains('|'.join(values), case=False, na=False)]
+    
+    # Filter by intensity level
+    allowed_levels = [intensity_level]
+    if intensity_level == 'Expert':
+        allowed_levels.append('Intermediate')
+    elif intensity_level == 'Intermediate':
+        allowed_levels.append('Beginner')
+    df = df[df['Level'].isin(allowed_levels)]
+    
     # Map exercise types to categories
     exercise_categories = {
         'Cardio': ['Cardio', 'HIIT', 'Aerobic'],
-        'Strength': ['Strength', 'Resistance', 'Weight', 'Bodyweight'],
-        'Flexibility': ['Stretch', 'Yoga', 'Mobility', 'Flexibility']
+        'Strength': ['Strength', 'Olympic Weightlifting', 'Plyometrics', 'Powerlifting', 'Strongman'],
+        'Flexibility': ['Stretching', 'Yoga', 'Mobility', 'Flexibility']
     }
     
-    # Define muscle groups to ensure diversity in strength training
+    # Define muscle groups for Strength diversity
     muscle_groups = {
-        'Upper Body': ['Shoulder', 'Upper Arms', 'Forearm', 'Chest', 'Back', 'Neck', 'Deltoid', 'Triceps', 'Biceps', 'Pectoralis', 'Latissimus', 'Trapezius'],
-        'Core': ['Waist', 'Abs', 'Core', 'Erector Spinae'],
-        'Lower Body': ['Hips', 'Thighs', 'Calves', 'Glutes', 'Quadriceps', 'Hamstrings', 'Gastrocnemius', 'Soleus', 'Gluteus Maximus']
+        'Upper Body': ['Shoulders', 'Chest', 'Upper Back', 'Lats', 'Biceps', 'Triceps', 'Forearms', 'Trapezius'],
+        'Core': ['Abdominals', 'Obliques', 'Lower Back', 'Core'],
+        'Lower Body': ['Quadriceps', 'Hamstrings', 'Glutes', 'Calves', 'Adductors', 'Abductors']
     }
     
-    # Track selected muscles to ensure diversity
-    selected_muscles = []
-    
-    # First categorize exercises
-    categorized_exercises = {
-        "Cardio": [],
-        "Strength": [],
-        "Flexibility": []
-    }
-    
-    for _, exercise in exercise_data.iterrows():
-        exercise_type = exercise.get('Equipment Type', '').strip()
-        exercise_name = exercise.get('Exercise', '').strip()
-        main_muscle = str(exercise.get('Main Muscle', '')).strip()
+    # Apply KNN collaborative filtering if sufficient ratings are available
+    predictions = []
+    if not ratings_df.empty:
+        # Create user-exercise rating matrix
+        rating_matrix = ratings_df.pivot_table(
+            index='user_id', 
+            columns='exercise_title', 
+            values='rating', 
+            fill_value=0
+        )
         
-        # Skip exercises with empty names
-        if not exercise_name:
+        # Check number of samples
+        n_samples = rating_matrix.shape[0]
+        max_neighbors = min(5, n_samples)  # Adjust n_neighbors dynamically
+        
+        if max_neighbors >= 1:
+            # Fit KNN model
+            knn = NearestNeighbors(metric='cosine', algorithm='brute', n_neighbors=max_neighbors)
+            knn.fit(rating_matrix)
+            
+            # Get user ratings
+            if user_id in rating_matrix.index:
+                user_ratings = rating_matrix.loc[user_id].values.reshape(1, -1)
+            else:
+                # For new users, use average ratings
+                user_ratings = rating_matrix.mean(axis=0).values.reshape(1, -1)
+            
+            # Find similar users
+            distances, indices = knn.kneighbors(user_ratings, n_neighbors=max_neighbors)
+            
+            # Get exercises not rated by the user
+            all_exercises = exercise_data['Title'].tolist()
+            rated_exercises = ratings_df[ratings_df['user_id'] == user_id]['exercise_title'].tolist()
+            unrated_exercises = [ex for ex in all_exercises if ex not in rated_exercises]
+            
+            # Predict ratings based on similar users
+            for ex in unrated_exercises:
+                if ex in rating_matrix.columns:
+                    similar_user_ratings = rating_matrix.iloc[indices[0]][ex]
+                    # Weighted average of ratings from similar users (weighted by similarity)
+                    similarity_weights = 1 - distances[0]  # Renamed to avoid collision with 'weights'
+                    similarity_weights = similarity_weights / similarity_weights.sum()
+                    pred_rating = np.average(similar_user_ratings, weights=similarity_weights, axis=0)
+                    predictions.append((ex, pred_rating))
+                else:
+                    predictions.append((ex, 3.0))  # Default for exercises not in rating matrix
+        else:
+            # Insufficient samples: use default ratings
+            predictions = [(title, 3.0) for title in exercise_data['Title'].tolist()]
+    else:
+        # No ratings: use default ratings
+        predictions = [(title, 3.0) for title in exercise_data['Title'].tolist()]
+    
+    # Fallback to rule-based recommendations if no predictions
+    if not predictions:
+        # Sort by Rating from exercise_data
+        sorted_df = df.sort_values('Rating', ascending=False)
+        predictions = [(row['Title'], row.get('Rating', 3.0)) for _, row in sorted_df.iterrows()]
+    
+    # Categorize predicted exercises
+    predicted_exercises = []
+    for ex_title, pred_rating in predictions:
+        if ex_title not in df['Title'].values:
             continue
+        exercise = df[df['Title'] == ex_title].iloc[0]
+        exercise_type = exercise.get('Type', '').strip()
+        main_muscle = str(exercise.get('BodyPart', '')).strip()
         
-        # Categorize the exercise
         category = None
         for cat, keywords in exercise_categories.items():
             if any(keyword.lower() in exercise_type.lower() for keyword in keywords):
                 category = cat
                 break
-        
-        # Default to Strength if not categorized but has a valid main muscle group
         if not category:
             if any(muscle.lower() in main_muscle.lower() for group in muscle_groups.values() for muscle in group):
                 category = 'Strength'
             else:
-                category = 'Flexibility'  # Default to flexibility for general exercises
+                category = 'Flexibility'
         
-        # Create exercise dictionary
         exercise_dict = {
-            "name": exercise_name,
+            "name": ex_title,
             "type": exercise_type,
             "main_muscle": main_muscle,
-            "preparation": exercise.get('Preparation', ''),
-            "execution": exercise.get('Execution', ''),
-            "target_muscles": exercise.get('Target Muscles', ''),
-            "synergist_muscles": exercise.get('Synergist Muscles', '')
+            "equipment": exercise.get('Equipment', ''),
+            "level": exercise.get('Level', ''),
+            "description": exercise.get('Desc', ''),
+            "rating": exercise.get('Rating', pred_rating),  # Use predicted rating if available
+            "rating_desc": exercise.get('RatingDesc', ''),
+            "sets": activity_settings['sets'],
+            "predicted_rating": pred_rating
         }
-        
-        # Add to categorized exercises
-        categorized_exercises[category].append(exercise_dict)
+        predicted_exercises.append((category, exercise_dict))
     
-    # Select exercises for each category with focus on diversity for Strength
-    if categorized_exercises['Strength']:
-        # Group strength exercises by muscle groups
-        strength_by_muscle = {
-            'Upper Body': [],
-            'Core': [],
-            'Lower Body': []
-        }
+    # Select exercises for each category
+    for category in recommendations:
+        num_ex = int(num_recommendations * weights.get(category, 0.0) / sum(weights.values()))
+        if not num_ex:
+            continue
         
-        for exercise in categorized_exercises['Strength']:
-            main_muscle = str(exercise['main_muscle']).lower()
+        cat_exercises = [ex for cat, ex in predicted_exercises if cat == category]
+        cat_exercises.sort(key=lambda x: x['predicted_rating'], reverse=True)
+        
+        # For Strength, ensure muscle group diversity
+        if category == 'Strength' and cat_exercises:
+            strength_by_muscle = {'Upper Body': [], 'Core': [], 'Lower Body': []}
+            for ex in cat_exercises:
+                main_muscle = str(ex['main_muscle']).lower()
+                assigned = False
+                for group_name, muscles in muscle_groups.items():
+                    if any(muscle.lower() in main_muscle for muscle in muscles):
+                        strength_by_muscle[group_name].append(ex)
+                        assigned = True
+                        break
+                if not assigned:
+                    strength_by_muscle['Core'].append(ex)
             
-            # Assign to a muscle group
-            assigned = False
-            for group_name, muscles in muscle_groups.items():
-                if any(muscle.lower() in main_muscle for muscle in muscles):
-                    strength_by_muscle[group_name].append(exercise)
-                    assigned = True
-                    break
+            upper_count = max(1, int(num_ex * 0.4))
+            lower_count = max(1, int(num_ex * 0.4))
+            core_count = max(1, num_ex - upper_count - lower_count)
             
-            # If not assigned to any group, put in a default group
-            if not assigned:
-                strength_by_muscle['Core'].append(exercise)
-        
-        # Select a balanced distribution from each muscle group
-        strength_recommendations = []
-        
-        # Define how many exercises to take from each group
-        num_strength = int(num_recommendations * weights['Strength'])
-        
-        # Allocate proportions based on complete body workout principles
-        upper_count = max(1, int(num_strength * 0.4))
-        lower_count = max(1, int(num_strength * 0.4))
-        core_count = max(1, num_strength - upper_count - lower_count)
-        
-        # Select exercises from each group
-        if strength_by_muscle['Upper Body']:
-            strength_recommendations.extend(
-                sorted(strength_by_muscle['Upper Body'], key=lambda x: x['name'])[:upper_count]
-            )
-        
-        if strength_by_muscle['Lower Body']:
-            strength_recommendations.extend(
-                sorted(strength_by_muscle['Lower Body'], key=lambda x: x['name'])[:lower_count]
-            )
-        
-        if strength_by_muscle['Core']:
-            strength_recommendations.extend(
-                sorted(strength_by_muscle['Core'], key=lambda x: x['name'])[:core_count]
-            )
-        
-        # Fill if we didn't get enough exercises
-        while len(strength_recommendations) < num_strength and categorized_exercises['Strength']:
-            # Add random exercises that aren't already included
-            available = [ex for ex in categorized_exercises['Strength'] 
-                         if ex not in strength_recommendations]
-            if not available:
-                break
-                
-            strength_recommendations.append(available[0])
-        
-        recommendations['Strength'] = strength_recommendations
+            strength_recommendations = []
+            for ex in strength_by_muscle['Upper Body'][:upper_count]:
+                strength_recommendations.append(ex)
+            for ex in strength_by_muscle['Lower Body'][:lower_count]:
+                strength_recommendations.append(ex)
+            for ex in strength_by_muscle['Core'][:core_count]:
+                strength_recommendations.append(ex)
+            
+            # Fill remaining slots
+            remaining = num_ex - len(strength_recommendations)
+            if remaining > 0:
+                available = [ex for ex in cat_exercises if ex not in strength_recommendations]
+                strength_recommendations.extend(available[:remaining])
+            
+            recommendations['Strength'] = strength_recommendations
+        else:
+            recommendations[category] = cat_exercises[:num_ex]
     
-    # Fill Cardio and Flexibility categories
-    num_cardio = int(num_recommendations * weights['Cardio'])
-    if categorized_exercises['Cardio']:
-        recommendations['Cardio'] = categorized_exercises['Cardio'][:num_cardio]
-    
-    num_flexibility = int(num_recommendations * weights['Flexibility'])
-    if categorized_exercises['Flexibility']:
-        recommendations['Flexibility'] = categorized_exercises['Flexibility'][:num_flexibility]
-    
-    # If any category is still empty, fill with random exercises from the dataset
+    # Fall back to rule-based if insufficient KNN recommendations
     for category, exercises in recommendations.items():
-        if not exercises:
-            random_exercises = [
-                {
-                    "name": exercise.get('Exercise', 'Unknown Exercise'),
-                    "type": exercise.get('Equipment Type', ''),
-                    "main_muscle": exercise.get('Main Muscle', ''),
-                    "preparation": exercise.get('Preparation', ''),
-                    "execution": exercise.get('Execution', ''),
-                    "target_muscles": exercise.get('Target Muscles', ''),
-                    "synergist_muscles": exercise.get('Synergist Muscles', '')
-                }
-                for _, exercise in exercise_data.sample(min(5, len(exercise_data))).iterrows()
-                if exercise.get('Exercise', '')
-            ]
-            
-            recommendations[category] = random_exercises[:int(num_recommendations * weights[category])]
+        if len(exercises) < int(num_recommendations * weights.get(category, 0.0) / sum(weights.values())):
+            cat_df = df[df['Type'].str.contains('|'.join(exercise_categories[category]), case=False, na=False)]
+            if not cat_df.empty:
+                num_needed = int(num_recommendations * weights.get(category, 0.0) / sum(weights.values())   ) - len(exercises)
+                # Sort by Rating for fallback
+                cat_df = cat_df.sort_values('Rating', ascending=False)
+                sampled = cat_df.head(min(num_needed, len(cat_df)))
+                for _, exercise in sampled.iterrows():
+                    exercise_dict = {
+                        "name": exercise.get('Title', 'Unknown Exercise'),
+                        "type": exercise.get('Type', ''),
+                        "main_muscle": exercise.get('BodyPart', ''),
+                        "equipment": exercise.get('Equipment', ''),
+                        "level": exercise.get('Level', ''),
+                        "description": exercise.get('Desc', ''),
+                        "rating": exercise.get('Rating', 0),
+                        "rating_desc": exercise.get('RatingDesc', ''),
+                        "sets": activity_settings['sets'],
+                        "predicted_rating": 3.0  # Default rating
+                    }
+                    recommendations[category].append(exercise_dict)
     
     return recommendations
+
+
+def calculate_body_fat_percentage(user_data):
+    """
+    Estimate body fat percentage using the Boer Formula.
+    Height is already in cm, so no conversion needed.
+    """
+    weight = user_data.get('weight', 70)
+    height = user_data.get('height', 170)
+    age = user_data.get('age', 30)
+    gender = user_data.get('gender', 'male').lower()
+
+    if gender == 'female':
+        bfp = (0.252 * weight) + (0.131 * height) - 9.0 + (0.1 * age)
+    else:  # male or other
+        bfp = (0.407 * weight) + (0.267 * height) - 19.2 + (0.1 * age)
+
+    # Apply realistic bounds
+    bfp = max(5.0, min(50.0, bfp))
+    return bfp
+
+def get_form_points(user_data):
+    """
+    Calculate form points based on estimated body fat percentage.
+    Lower BFP generally indicates better fitness, so higher form points.
+    """
+    bfp = calculate_body_fat_percentage(user_data)
+    # Scale BFP to a 0-100 score (lower BFP = higher form points)
+    form_points = max(0, 100 - (bfp * 2))  # Simplified formula
+    return form_points
+
+def get_exercise_recommendation_plan(user_data):
