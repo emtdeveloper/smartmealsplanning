@@ -345,3 +345,48 @@ def load_recipe_details():
     except Exception as e:
         print(f"Error loading recipe details: {e}")
         return pd.DataFrame()
+
+def load_food_data():
+    """
+    Load the food dataset
+    """
+    try:
+        food_data = pd.read_csv('attached_assets/cleaned_food_data_refined.csv')
+        # Clean up column names and data
+        food_data.columns = food_data.columns.str.strip()
+        # Ensure numeric columns are treated as numeric
+        numeric_cols = ['Calories', 'Total Fat', 'Saturated Fat', 'Monounsaturated Fat', 
+                       'Polyunsaturated Fat', 'Carbs', 'Sugar', 'Protein', 'Dietary Fiber', 
+                       'Cholesterol', 'Sodium', 'Water']
+        for col in numeric_cols:
+            if col in food_data.columns:
+                food_data[col] = pd.to_numeric(food_data[col], errors='coerce')
+        
+        return food_data
+    except Exception as e:
+        print(f"Error loading food data: {e}")
+        # Return empty DataFrame if file not found or other error
+        return pd.DataFrame()
+
+#added by tushar 6
+def load_exercise_data():
+    """
+    Load the exercise dataset
+    """
+    try:
+        exercise_data = pd.read_csv('attached_assets/megaGymDataset.csv')
+        # Clean up column names
+        exercise_data.columns = exercise_data.columns.str.strip()
+
+        # Validate required columns in exercise data
+        required_exercise_cols = ['Title', 'Desc', 'Type', 'BodyPart', 'Equipment', 
+                                'Level', 'Rating', 'RatingDesc']
+        if not all(col in exercise_data.columns for col in required_exercise_cols):
+            raise ValueError("Missing required columns in exercise dataset")
+        
+        return exercise_data
+    except Exception as e:
+        print(f"Error loading exercise data: {e}")
+        # Return empty DataFrame if file not found or other error
+        return pd.DataFrame()
+#ebd
