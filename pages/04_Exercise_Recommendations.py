@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from utils.recommendations import recommend_exercises, load_user_ratings, save_user_ratings
+from utils.recommendations import recommend_exercises, get_form_points, get_exercise_recommendation_plan, calculate_body_fat_percentage, load_user_ratings, save_user_ratings
 from utils.user_management import get_user
 from utils.visualization import create_exercise_distribution_chart
 from utils.data_processing import load_exercise_data
@@ -137,9 +137,13 @@ def main():
                         
                         for _, exercise in body_part_exercises.iterrows():
                             with st.container():
+                                normalized_rating = exercise['Rating'] / 2 if exercise['Rating'] > 0 else 0
+                                stars = f"{''.join('🌟' for _ in range(int(normalized_rating)))}{''.join('☆' for _ in range(5 - int(normalized_rating)))}" if normalized_rating > 0 else ""
+                                rating_desc = exercise['RatingDesc'] if pd.notna(exercise['RatingDesc']) and exercise['RatingDesc'] != "" else "NA"
                                 st.markdown(
                                     f"**{exercise['Title']} - {exercise['Level']} "
-                                    f"({exercise['Rating']}/10 Rating)**"
+                                    f"({normalized_rating:.1f}<span style='font-size: smaller'>/5</span> {stars} - {rating_desc})**",
+                                    unsafe_allow_html=True
                                 )
                                 display_exercise_details(exercise.to_dict(), user_data=user_data)
                                 st.markdown("---")  # Divider for visual separation
@@ -203,10 +207,28 @@ def display_exercise_content(exercise, context_id, user_data=None):
     
     with col2:
         # Rating and parameters
-        if exercise.get('rating', exercise.get('Rating')):
-            st.metric("Exercise Rating", f"{exercise.get('rating', exercise.get('Rating', 'N/A'))}")
-        if exercise.get('rating_desc', exercise.get('RatingDesc')):
-            st.info(exercise.get('rating_desc', exercise.get('RatingDesc', '')))
+        # Exercise Rating (from dataset)
+        dataset_rating = exercise.get('rating', exercise.get('Rating'))
+        dataset_rating_desc = exercise.get('rating_desc', exercise.get('RatingDesc'))
+        if dataset_rating is not None and pd.notna(dataset_rating):
+            normalized_rating = dataset_rating / 2 if dataset_rating > 0 else 0
+            stars = f"{''.join('🌟' for _ in range(int(normalized_rating)))}{''.join('☆' for _ in range(5 - int(normalized_rating)))}" if normalized_rating > 0 else ""
+            rating_desc = dataset_rating_desc if pd.notna(dataset_rating_desc) and dataset_rating_desc != "" else "NA"
+            st.markdown(f"**Exercise Rating:** {normalized_rating:.1f}<span style='font-size: smaller'>/5</span> {stars}", unsafe_allow_html=True)
+            st.info(rating_desc)
+        
+        # User Rating
+        exercise_name = exercise.get('name', exercise.get('Title', 'Unknown'))
+        rating_key = f"rating_{exercise_name}_{context_id}"
+        saved_rating_key = f"saved_rating_{exercise_name}_{context_id}"
+        if saved_rating_key not in st.session_state:
+            ratings_df = load_user_ratings()
+            existing_rating = ratings_df[(ratings_df['user_id'] == st.session_state.get('current_user', 'demo_user')) & 
+                                        (ratings_df['exercise_title'] == exercise_name)]['rating']
+            st.session_state[saved_rating_key] = int(existing_rating.iloc[0]) if not existing_rating.empty else 0
+        user_rating = st.session_state[saved_rating_key] if st.session_state[saved_rating_key] > 0 else 0
+        user_stars = f"{''.join('🌟' for _ in range(user_rating))}{''.join('☆' for _ in range(5 - user_rating))}" if user_rating > 0 else ""
+        st.markdown(f"**User Rating:** {user_rating}<span style='font-size: smaller'>/5</span> {user_stars}", unsafe_allow_html=True)
         
         # Display exercise parameters based on level
         level = exercise.get('level', exercise.get('Level', '')).lower()
@@ -237,8 +259,11 @@ def display_exercise_content(exercise, context_id, user_data=None):
                                     (ratings_df['exercise_title'] == exercise_name)]['rating']
         st.session_state[saved_rating_key] = int(existing_rating.iloc[0]) if not existing_rating.empty else 3
 
+    # Display current user rating
+    #st.markdown(f"**Your Rating:** {st.session_state[saved_rating_key]}/5")
+
     # Rating slider using the saved rating as the initial value
-    current_rating = st.slider(f"Rate {exercise_name}", 1, 5, st.session_state[saved_rating_key], key=rating_key)
+    current_rating = st.slider(f"Rate {exercise_name}", 0, 5, st.session_state[saved_rating_key], key=rating_key)
     
     # Save button to commit rating
     if st.button("Save Rating", key=f"save_{rating_key}"):
@@ -285,10 +310,13 @@ def display_exercise_details(exercise, user_data=None):
             st.markdown(f"**Equipment:** {exercise['Equipment']}")
             st.markdown(f"**Level:** {exercise['Level']}")
             
-            if pd.notna(exercise['Rating']):
-                st.metric("Rating", f"{exercise['Rating']}/10")
-            if pd.notna(exercise['RatingDesc']):
-                st.info(exercise['RatingDesc'])
+            dataset_rating = exercise.get('Rating')
+            if pd.notna(dataset_rating):
+                normalized_rating = dataset_rating / 2 if dataset_rating > 0 else 0
+                stars = f"{''.join('🌟' for _ in range(int(normalized_rating)))}{''.join('☆' for _ in range(5 - int(normalized_rating)))}" if normalized_rating > 0 else "NA"
+                rating_desc = exercise.get('RatingDesc') if pd.notna(exercise.get('RatingDesc')) and exercise.get('RatingDesc') != "" else "NA"
+                st.markdown(f"**Exercise Rating:** {normalized_rating:.1f}<span style='font-size: smaller'>/5</span> {stars}", unsafe_allow_html=True)
+                st.info(rating_desc)
         
         with col2:
             # Display exercise parameters based on level
